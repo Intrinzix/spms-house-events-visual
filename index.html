@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F2F3F7;--card:#FFFFFF;--ink:#1C1E29;--muted:#5D6173;--line:#DADDE6;--empty:#E6E8EF;--focus:#3D82D6;--warn:#B45309;
+:root{--bg:#F2F3F7;--card:#FFFFFF;--ink:#1C1E29;--muted:#5D6173;--line:#DADDE6;--empty:#E6E8EF;--focus:#3D82D6;--warn:#B45309;--danger:#C62828;
 --so:#6C5CE0;--pe:#E0484A;--me:#3D82D6;--sa:#E9A023;--gr:#2FA56A;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#17181E;--card:#20222B;--ink:#ECEDF2;--muted:#A3A7B7;--line:#343745;--empty:#2C2F3B;--warn:#F5B971;--so:#8B7EF0;--pe:#F0615F;--me:#5C9BE8;--sa:#F2B544;--gr:#46C483;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#17181E;--card:#20222B;--ink:#ECEDF2;--muted:#A3A7B7;--line:#343745;--empty:#2C2F3B;--warn:#F5B971;--danger:#FF8A80;--so:#8B7EF0;--pe:#F0615F;--me:#5C9BE8;--sa:#F2B544;--gr:#46C483;color-scheme:dark}}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .wrap{max-width:980px;margin:0 auto;padding:28px 20px 56px}
@@ -21,10 +21,12 @@ h2{font-size:15px;font-weight:600;color:var(--muted);margin:32px 0 12px}
 .key li{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 6px;font-size:14px}
 .key b{font-weight:600}.key span{color:var(--muted)}
 .tools{display:flex;flex-wrap:wrap;gap:8px}
-.btn{font:inherit;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;cursor:pointer;text-decoration:none}
+.btn{font:inherit;font-size:14px;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;cursor:pointer;text-decoration:none;min-height:38px}
 .btn:hover{border-color:var(--muted)}
 .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn.danger{color:var(--danger);border-color:var(--danger);background:transparent}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .grid{display:grid;gap:12px}
 .g4{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
 .g3{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
@@ -36,13 +38,43 @@ h2{font-size:15px;font-weight:600;color:var(--muted);margin:32px 0 12px}
 .cat ul{list-style:none;margin:0;padding:0}
 .cat li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:15px}
 .cat li:first-child{border-top:0}
-.cat li .n{flex:1;min-width:0;overflow-wrap:anywhere}
+.cat li .n{flex:1;min-width:0;overflow-wrap:break-word}
 .cat li time{color:var(--muted);font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .cat li.done .n,.cat li.done time{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
+.cat li button.row{all:unset;display:flex;align-items:baseline;gap:8px;flex:1;min-width:0;cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px}
+.cat li button.row:hover{background:var(--empty)}
+.cat li button.row:focus-visible{outline:2px solid var(--focus)}
+.pen{color:var(--muted);font-size:13px}
+.add{margin-top:10px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;width:100%;text-align:left}
+.add:hover{color:var(--ink);border-color:var(--muted)}
 .none{color:var(--muted);font-size:14px;margin:0}
 .msg{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:20px;font-size:14px}
 .msg.warn{border-color:var(--warn);color:var(--warn)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:1px solid var(--focus);border-radius:12px;padding:10px 14px;margin-top:20px;font-size:14px}
+.bar .acts{display:flex;gap:8px;flex-wrap:wrap}
 .foot{margin-top:28px;font-size:13px;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:rgba(10,11,16,.55)}
+dialog form{padding:20px;display:grid;gap:14px}
+dialog h2{margin:0;font-size:20px;color:var(--ink)}
+label.f{display:grid;gap:6px;font-size:14px;font-weight:600}
+input[type=text],input[type=password],select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+.row2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+legend{font-size:14px;font-weight:600;margin-bottom:6px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px 6px 7px;cursor:pointer;min-height:36px}
+.chip .dot{width:14px;height:14px;border-radius:4px;background:var(--empty)}
+.chip[aria-pressed=true]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.chip[aria-pressed=true] .dot{background:var(--c)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.hint.err{color:var(--danger)}
+.check{display:flex;align-items:center;gap:10px;font-size:15px}
+.check input{width:18px;height:18px;accent-color:var(--gr)}
+.dlgacts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.dlgacts .sp{flex:1}
 @media (max-width:520px){.wrap{padding:20px 14px 44px}.cat{padding:14px}}
 </style>
 </head>
@@ -51,17 +83,54 @@ h2{font-size:15px;font-weight:600;color:var(--muted);margin:32px 0 12px}
   <div class="top">
     <div><h1>SPMS house events</h1><ul class="key" id="key" aria-label="Houses and event counts"></ul></div>
     <div class="tools">
-      <a class="btn"href="https://app.pagescms.org" target="_blank" rel="noopener">Edit events</a>
+      <button class="btn" id="editBtn" type="button">Edit events</button>
       <button class="btn primary" id="png" type="button">Export image</button>
     </div>
   </div>
+  <div id="bar"></div>
   <div id="status" role="status"></div>
   <h2>Single house</h2><div class="grid g4" id="singles"></div>
   <h2>Two houses</h2><div class="grid g3" id="pairs"></div>
   <h2>All houses</h2><div class="grid g3" id="all"></div>
-  <p class="foot">Events are edited in Pages CMS and appear here about a minute after saving.</p>
+  <p class="foot" id="foot">Updates automatically every minute.</p>
 </div>
+
+<dialog id="passDlg" aria-labelledby="passTitle">
+  <form method="dialog" id="passForm">
+    <h2 id="passTitle">Enter captain passcode</h2>
+    <p class="hint">You only need to do this once on this device.</p>
+    <label class="f">Passcode<input type="password" id="passIn" autocomplete="current-password" required></label>
+    <p class="hint err" id="passErr" hidden></p>
+    <div class="dlgacts"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit" id="passGo">Unlock editing</button></div>
+  </form>
+</dialog>
+
+<dialog id="evDlg" aria-labelledby="evTitle">
+  <form method="dialog" id="evForm" novalidate>
+    <h2 id="evTitle">Add event</h2>
+    <label class="f">Event name<input type="text" id="evName" maxlength="80" autocomplete="off" required></label>
+    <div class="row2">
+      <label class="f">Day<select id="evDay"></select></label>
+      <label class="f">Month<select id="evMon"></select></label>
+    </div>
+    <fieldset>
+      <legend>Houses taking part</legend>
+      <div class="chips" id="chips"></div>
+      <p class="hint" id="catHint"></p>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="evDone"> Finished (shown struck through)</label>
+    <p class="hint err" id="evErr" hidden></p>
+    <div class="dlgacts">
+      <button class="btn danger" type="button" id="evDel" hidden>Delete</button><span class="sp"></span>
+      <button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit" id="evSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
+/* ── Paste your Apps Script web app URL here (ends in /exec) ── */
+const API = "";
+/* ─────────────────────────────────────────────────────────────── */
 (function(){
 const HOUSES=[{id:"so",name:"Solertia"},{id:"pe",name:"Peritia"},{id:"me",name:"Meliora"},{id:"sa",name:"Sagacitas"}];
 const HN=Object.fromEntries(HOUSES.map(h=>[h.id,h.name]));
@@ -74,38 +143,121 @@ const PAIRS=[["so","pe"],["so","me"],["so","sa"],["pe","me"],["pe","sa"],["me","
 const BIG=[["so","pe","me","sa"],["hh"]];
 const VALID=new Set([...SINGLES,...PAIRS].map(h=>h.join("+")).concat(["all","hh"]));
 const key=h=>h[0]==="hh"?"hh":h.length===4?"all":h.join("+");
+const housesOf=cat=>cat==="hh"?["hh"]:cat==="all"?ORDER.slice():cat.split("+");
 const titleOf=h=>h[0]==="hh"?"House event":h.length===4?"All houses":h.map(x=>HN[x]).join(" + ");
 const ay=e=>((e.m+4)%12)*40+e.d;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let events=[];
+const $=id=>document.getElementById(id);
+const PASS_KEY="spms-house-pass";
+const store={get(){try{return localStorage.getItem(PASS_KEY)||""}catch(e){return ""}},set(v){try{localStorage.setItem(PASS_KEY,v)}catch(e){}},clear(){try{localStorage.removeItem(PASS_KEY)}catch(e){}}};
+let events=[],editing=false,pass=store.get(),busy=false,locked=true;
 
+/* ---------- render ---------- */
 function tile(h,size){const q=Math.round(size*.47),g=size-2*q;let s='<svg class="tile" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true">';
 if(h[0]==="hh")return s+'<rect width="'+size+'" height="'+size+'" rx="'+Math.max(3,Math.round(size*.12))+'" fill="var(--gr)"/></svg>';
 for(const id of ORDER){const[x,y]=QPOS[id];s+='<rect x="'+x*(q+g)+'" y="'+y*(q+g)+'" width="'+q+'" height="'+q+'" rx="'+Math.max(2,Math.round(q*.18))+'" fill="'+(h.includes(id)?"var(--"+id+")":"var(--empty)")+'"/>';}
 return s+"</svg>";}
 const evsOf=h=>events.filter(e=>e.cat===key(h)).sort((a,b)=>ay(a)-ay(b));
 
-function card(h){const big=h.length===4||h[0]==="hh",evs=evsOf(h);
-const list=evs.length?"<ul>"+evs.map(e=>'<li'+(e.done?' class="done"':'')+'><span class="n">'+esc(e.name)+(e.done?'<span class="sr" style="position:absolute;left:-9999px"> (finished)</span>':'')+'</span><time>'+e.d+" "+MON[e.m-1]+"</time></li>").join("")+"</ul>":'<p class="none">No events yet</p>';
-return '<section class="cat'+(big?" big":"")+'" aria-label="'+esc(titleOf(h))+'">'+tile(h,big?52:44)+'<div class="body"><h3>'+esc(titleOf(h))+"</h3>"+list+"</div></section>";}
+function item(e){const inner='<span class="n">'+esc(e.name)+(e.done?'<span class="sr"> (finished)</span>':'')+'</span><time>'+e.d+" "+MON[e.m-1]+"</time>";
+if(editing&&e.id)return '<li'+(e.done?' class="done"':'')+'><button type="button" class="row" data-edit="'+esc(e.id)+'" aria-label="Edit '+esc(e.name)+'">'+inner+'<span class="pen" aria-hidden="true">✎</span></button></li>';
+return '<li'+(e.done?' class="done"':'')+'>'+inner+'</li>';}
+
+function card(h){const big=h.length===4||h[0]==="hh",evs=evsOf(h),k=key(h);
+const list=evs.length?"<ul>"+evs.map(item).join("")+"</ul>":'<p class="none">No events yet</p>';
+const add=editing?'<button type="button" class="add" data-add="'+k+'">+ Add event</button>':"";
+return '<section class="cat'+(big?" big":"")+'" aria-label="'+esc(titleOf(h))+'">'+tile(h,big?52:44)+'<div class="body"><h3>'+esc(titleOf(h))+"</h3>"+list+add+"</div></section>";}
 
 function render(){const c={so:0,pe:0,me:0,sa:0};events.forEach(e=>{if(e.cat==="all")ORDER.forEach(x=>c[x]++);else if(e.cat!=="hh")e.cat.split("+").forEach(x=>c[x]++);});
-document.getElementById("key").innerHTML=HOUSES.map(h=>"<li>"+tile([h.id],22)+"<b>"+h.name+"</b><span>"+c[h.id]+"</span></li>").join("");
-document.getElementById("singles").innerHTML=SINGLES.map(card).join("");
-document.getElementById("pairs").innerHTML=PAIRS.map(card).join("");
-document.getElementById("all").innerHTML=BIG.map(card).join("");}
+$("key").innerHTML=HOUSES.map(h=>"<li>"+tile([h.id],22)+"<b>"+h.name+"</b><span>"+c[h.id]+"</span></li>").join("");
+$("singles").innerHTML=SINGLES.map(card).join("");
+$("pairs").innerHTML=PAIRS.map(card).join("");
+$("all").innerHTML=BIG.map(card).join("");
+$("editBtn").textContent=editing?"Done editing":"Edit events";
+$("editBtn").setAttribute("aria-pressed",editing?"true":"false");
+$("bar").innerHTML=editing?'<div class="bar"><span>Editing — tap an event to change it, or use <b>+ Add event</b> in any box.</span><span class="acts"><button class="btn" type="button" id="addTop">+ Add event</button>'+(locked?'<button class="btn" type="button" id="lock">Lock this device</button>':'')+'</span></div>':"";
+if(editing){$("addTop").onclick=()=>openEv(null,"");if($("lock"))$("lock").onclick=()=>{store.clear();pass="";editing=false;render();};}}
 
-function normalise(raw){const ok=[],bad=[];(Array.isArray(raw&&raw.events)?raw.events:[]).forEach((r,i)=>{
+function normalise(list){const ok=[],bad=[];(Array.isArray(list)?list:[]).forEach((r,i)=>{
 const name=String(r&&r.name||"").trim(),d=Number(r&&r.day),m=MON.indexOf(r&&r.month)+1,cat=r&&r.category;
 if(!name||!m||!(d>=1&&d<=DIM[m-1])||!VALID.has(cat)){bad.push(name||"Entry "+(i+1));return;}
-ok.push({name,d,m,cat,done:!!r.done});});return{ok,bad};}
+ok.push({id:r.id?String(r.id):"",name,d,m,cat,done:!!r.done});});return{ok,bad};}
 
-async function load(){const st=document.getElementById("status");
-try{const r=await fetch("events.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);
-const {ok,bad}=normalise(await r.json());events=ok;render();
-st.innerHTML=bad.length?'<div class="msg warn">Some entries are incomplete and aren\'t shown: '+bad.map(esc).join(", ")+'. Fix their date or houses in Pages CMS.</div>':"";}
-catch(e){render();st.innerHTML='<div class="msg warn">Couldn\'t load events.json. Refresh to try again.</div>';}}
+function setEvents(list){const {ok,bad}=normalise(list);events=ok;render();
+$("status").innerHTML=bad.length?'<div class="msg warn">Some events are incomplete and aren\'t shown: '+bad.map(esc).join(", ")+'.</div>':"";}
 
+/* ---------- data ---------- */
+async function load(){if(busy)return;
+try{let list;
+if(API){const r=await fetch(API+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j.ok)throw new Error(j.error);list=j.events;locked=j.locked!==false;}
+else{const r=await fetch("events.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);list=(await r.json()).events;}
+if(!busy&&!$("evDlg").open)setEvents(list);}
+catch(e){if(!events.length)render();$("status").innerHTML='<div class="msg warn">Couldn\'t load events. Refresh to try again.</div>';}}
+
+async function post(body){if(!API)throw new Error("Editing isn't connected yet (API URL missing in index.html).");
+const r=await fetch(API,{method:"POST",body:JSON.stringify(Object.assign({passcode:pass},body))});/* text/plain → no CORS preflight */
+if(!r.ok)throw new Error("Server error "+r.status);return r.json();}
+
+/* ---------- passcode ---------- */
+function askPass(){$("passErr").hidden=true;$("passIn").value="";$("passDlg").showModal();$("passIn").focus();}
+$("passForm").addEventListener("submit",async ev=>{ev.preventDefault();const v=$("passIn").value.trim();if(!v)return;
+$("passGo").disabled=true;$("passGo").textContent="Checking…";
+try{pass=v;const j=await post({action:"check"});
+if(j.ok){store.set(v);$("passDlg").close();editing=true;render();}
+else{pass="";$("passErr").textContent=j.error==="passcode"?"That passcode isn't right.":j.error;$("passErr").hidden=false;}}
+catch(e){pass="";$("passErr").textContent=e.message||"Couldn't reach the server.";$("passErr").hidden=false;}
+finally{$("passGo").disabled=false;$("passGo").textContent="Unlock editing";}});
+
+$("editBtn").onclick=()=>{if(editing){editing=false;render();return;}
+if(!API){$("status").innerHTML='<div class="msg warn">Editing isn\'t connected yet — the site owner needs to add the Apps Script URL.</div>';return;}
+if(pass||!locked){editing=true;render();}else askPass();};
+
+/* ---------- event dialog ---------- */
+let cur=null,sel=[];
+$("evDay").innerHTML=Array.from({length:31},(_,i)=>'<option>'+(i+1)+'</option>').join("");
+$("evMon").innerHTML=MON.map(m=>'<option>'+m+'</option>').join("");
+$("chips").innerHTML=HOUSES.map(h=>'<button type="button" class="chip" data-h="'+h.id+'" style="--c:var(--'+h.id+')" aria-pressed="false"><span class="dot"></span>'+h.name+'</button>').join("")
+ +'<button type="button" class="chip" data-h="hh" style="--c:var(--gr)" aria-pressed="false"><span class="dot"></span>House event</button>';
+
+function catOf(){if(sel.includes("hh"))return{cat:"hh"};const s=ORDER.filter(x=>sel.includes(x));
+if(!s.length)return{err:"Pick at least one house."};if(s.length===3)return{err:"Three-house events aren't allowed — pick 1, 2 or all 4."};
+return{cat:s.length===4?"all":s.join("+")};}
+function syncChips(){document.querySelectorAll("#chips .chip").forEach(b=>b.setAttribute("aria-pressed",sel.includes(b.dataset.h)?"true":"false"));
+const c=catOf();$("catHint").className="hint"+(c.err&&sel.length?" err":"");
+$("catHint").textContent=c.cat?"Goes in: "+titleOf(housesOf(c.cat)):(sel.length?c.err:"Tap the houses involved, or House event.");}
+$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const h=b.dataset.h;
+if(h==="hh")sel=sel.includes("hh")?[]:["hh"];else{sel=sel.filter(x=>x!=="hh");sel=sel.includes(h)?sel.filter(x=>x!==h):sel.concat(h);}syncChips();});
+function syncDays(){const m=$("evMon").selectedIndex,d=$("evDay");const max=DIM[m];[...d.options].forEach((o,i)=>o.disabled=i>=max);if(d.selectedIndex>=max)d.selectedIndex=max-1;}
+$("evMon").onchange=syncDays;
+
+function openEv(e,cat){cur=e;$("evErr").hidden=true;$("evTitle").textContent=e?"Edit event":"Add event";
+$("evName").value=e?e.name:"";const now=new Date();
+$("evMon").selectedIndex=e?e.m-1:now.getMonth();syncDays();$("evDay").selectedIndex=(e?e.d:now.getDate())-1;syncDays();
+sel=e?housesOf(e.cat):(cat?housesOf(cat):[]);syncChips();$("evDone").checked=e?e.done:false;
+$("evDel").hidden=!e;$("evDlg").showModal();$("evName").focus();}
+
+function showErr(m){$("evErr").textContent=m;$("evErr").hidden=false;}
+async function write(body,btn,label){busy=true;btn.disabled=true;const old=btn.textContent;btn.textContent=label;
+try{const j=await post(body);
+if(j.ok){setEvents(j.events);$("evDlg").close();}
+else if(j.error==="passcode"){store.clear();pass="";editing=false;$("evDlg").close();render();askPass();$("passErr").textContent="The passcode has changed — enter the new one.";$("passErr").hidden=false;}
+else showErr(j.error||"Couldn't save.");}
+catch(e){showErr((e.message||"Couldn't reach the server")+". Nothing was changed — try again.");}
+finally{busy=false;btn.disabled=false;btn.textContent=old;}}
+
+$("evForm").addEventListener("submit",ev=>{ev.preventDefault();
+const name=$("evName").value.trim();if(!name){showErr("Give the event a name.");$("evName").focus();return;}
+const c=catOf();if(c.err){showErr(c.err);return;}
+write({action:"save",event:{id:cur?cur.id:"",name,day:$("evDay").selectedIndex+1,month:MON[$("evMon").selectedIndex],category:c.cat,done:$("evDone").checked}},$("evSave"),"Saving…");});
+$("evDel").onclick=()=>{if(!cur)return;if($("evDel").dataset.confirm!=="1"){$("evDel").dataset.confirm="1";$("evDel").textContent="Tap again to delete";return;}
+write({action:"delete",id:cur.id},$("evDel"),"Deleting…");};
+$("evDlg").addEventListener("close",()=>{$("evDel").dataset.confirm="";$("evDel").textContent="Delete";});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>b.closest("dialog").close());
+
+document.addEventListener("click",e=>{const ed=e.target.closest("[data-edit]");if(ed){const ev=events.find(x=>x.id===ed.dataset.edit);if(ev)openEv(ev);return;}
+const ad=e.target.closest("[data-add]");if(ad)openEv(null,ad.dataset.add);});
+
+/* ---------- PNG export ---------- */
 function exportPNG(){const cs=getComputedStyle(document.documentElement),v=n=>cs.getPropertyValue(n).trim();
 const W=1080,P=56,COLW=(W-P*2-24)/2,F='"Bricolage Grotesque",system-ui,sans-serif';
 const groups=[["Single house",SINGLES],["Two houses",PAIRS],["All houses",BIG]];
@@ -124,9 +276,11 @@ evs.forEach((e,k)=>{const ty=y+76+k*32;x.textAlign="left";x.fillStyle=e.done?v("
 if(e.done)x.fillRect(X+84,ty-7,x.measureText(e.name).width,2);x.fillStyle=v("--muted");x.textAlign="right";x.fillText(e.d+" "+MON[e.m-1],X+COLW-18,ty);x.textAlign="left";});});
 y+=rowH+20;}});
 cv.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="spms-house-events.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);},"image/png");}
+$("png").onclick=exportPNG;
 
-document.getElementById("png").onclick=exportPNG;
 load();
+setInterval(()=>{if(!document.hidden)load();},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)load();});
 })();
 </script>
 </body>
