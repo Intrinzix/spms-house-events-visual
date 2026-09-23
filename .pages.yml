@@ -1,0 +1,51 @@
+content:
+  - name: events
+    label: House events
+    type: file
+    path: events.json
+    fields:
+      - name: events
+        label: Events
+        type: object
+        list:
+          collapsible:
+            collapsed: true
+            summary: "{name} ({day} {month})"
+        fields:
+          - name: name
+            label: Event name
+            type: string
+            required: true
+          - name: day
+            label: Day
+            type: number
+            required: true
+            description: Day of the month, 1 to 31
+          - name: month
+            label: Month
+            type: select
+            required: true
+            options:
+              values: [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]
+          - name: category
+            label: Houses
+            type: select
+            required: true
+            options:
+              values:
+                - { name: so, label: Solertia }
+                - { name: pe, label: Peritia }
+                - { name: me, label: Meliora }
+                - { name: sa, label: Sagacitas }
+                - { name: so+pe, label: Solertia + Peritia }
+                - { name: so+me, label: Solertia + Meliora }
+                - { name: so+sa, label: Solertia + Sagacitas }
+                - { name: pe+me, label: Peritia + Meliora }
+                - { name: pe+sa, label: Peritia + Sagacitas }
+                - { name: me+sa, label: Meliora + Sagacitas }
+                - { name: all, label: All houses }
+                - { name: hh, label: House event }
+          - name: done
+            label: Finished
+            type: boolean
+            description: Tick once the event has happened. It shows struck through on the board.
