@@ -60,7 +60,7 @@ dialog::backdrop{background:rgba(10,11,16,.55)}
 dialog form{padding:20px;display:grid;gap:14px}
 dialog h2{margin:0;font-size:20px;color:var(--ink)}
 label.f{display:grid;gap:6px;font-size:14px;font-weight:600}
-input[type=text],input[type=password],select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+input[type=text],input[type=password],input[type=search],select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
 .row2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
 fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
 legend{font-size:14px;font-weight:600;margin-bottom:6px;padding:0}
@@ -75,24 +75,43 @@ legend{font-size:14px;font-weight:600;margin-bottom:6px;padding:0}
 .check input{width:18px;height:18px;accent-color:var(--gr)}
 .dlgacts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .dlgacts .sp{flex:1}
+.seg{display:inline-flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;margin-top:14px}
+.seg button{font:inherit;font-size:14px;font-weight:600;border:0;background:none;color:var(--muted);padding:6px 16px;border-radius:7px;cursor:pointer;min-height:34px}
+.seg button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.lead{color:var(--muted);font-size:14px;margin:22px 0 0;max-width:60ch}
+.search{margin-top:12px;max-width:320px}
+.note{display:block;color:var(--muted);font-size:13px}
+.g2{grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr))}
+.cat ul.cols{columns:2 170px;column-gap:24px}
+.cat ul.cols li{break-inside:avoid;border-top:0;padding:4px 0}
 @media (max-width:520px){.wrap{padding:20px 14px 44px}.cat{padding:14px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <div><h1>SPMS house events</h1><ul class="key" id="key" aria-label="Houses and event counts"></ul></div>
+    <div><h1>SPMS house events</h1><ul class="key" id="key" aria-label="Houses and event counts"></ul>
+      <div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" id="tabBoard" aria-selected="true">Board</button><button type="button" role="tab" id="tabCat" aria-selected="false">Catalogue</button></div></div>
     <div class="tools">
       <button class="btn" id="editBtn" type="button">Edit events</button>
       <button class="btn primary" id="png" type="button">Export image</button>
     </div>
   </div>
+  <div id="boardView">
   <div id="bar"></div>
   <div id="status" role="status"></div>
   <h2>Single house</h2><div class="grid g4" id="singles"></div>
   <h2>Two houses</h2><div class="grid g3" id="pairs"></div>
   <h2>All houses</h2><div class="grid g3" id="all"></div>
   <p class="foot" id="foot">Updates automatically every minute.</p>
+  </div>
+  <div id="catView" hidden>
+  <p class="lead">Event ideas houses have run before, grouped by who took part. For inspiration — this list can't be edited here.</p>
+  <input type="search" id="q" class="search" placeholder="Search ideas" aria-label="Search event ideas" autocomplete="off">
+  <h2>Single house</h2><div class="grid g2" id="cSingles"></div>
+  <h2>Two houses</h2><div class="grid g3" id="cPairs"></div>
+  <h2>All houses</h2><div class="grid g3" id="cAll"></div>
+  </div>
 </div>
 
 <dialog id="passDlg" aria-labelledby="passTitle">
@@ -150,7 +169,37 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const $=id=>document.getElementById(id);
 const PASS_KEY="spms-house-pass";
 const store={get(){try{return localStorage.getItem(PASS_KEY)||""}catch(e){return ""}},set(v){try{localStorage.setItem(PASS_KEY,v)}catch(e){}},clear(){try{localStorage.removeItem(PASS_KEY)}catch(e){}}};
-let events=[],editing=false,pass=store.get(),busy=false,locked=true;
+let events=[],editing=false,pass=store.get(),busy=false,locked=true,view=location.hash==="#catalogue"?"cat":"board",q="";
+
+/* ---------- catalogue (read-only; edit here in the repo) ---------- */
+const CATALOGUE={
+ so:["Solertia Reps Assemble!","Solertia Cooks","Solertia Celebrates Christmas","Solertia Switch Shindig","Solertia Sports Day & Dinner","Solertia Against Probability","Solertia Goes Iceskating","Solertia's Night at the Movies","Solertia Eats Pizza","Solertia Finally Watches Cars 2"],
+ pe:["Peritia Passes","Peritia Subcomm Bonding","Performative Peritia","Spicy Peritia CNY","Peritia Inferno","Peritia Studies Together","Peritia House Leader Lunch","Peritia Potluck Dinner","Peritia Hot Hideout Dinner","PeriCrafts","Brush Up With Peritia","Peritia Movie Night","Peritia Pizza Party"],
+ me:["Meliora Game Night","Meliora Study Session","Meliora Thanksgiving BBQ","Meliora Locks In","Meliora We Got a Problem","Meliora Halloween Movie Night","Meliora Karaoke Night","Meliora Carnival","Meliora Subcommittee Bonding","Meliora Secret Santa","Meliora Welcome Back To School Party"],
+ sa:["Saga Subcomm Soirée","SAGA Study And Get A+","Saga 3-Day Study Drive","SAGA Sing And Gather Around!","The Great Saga Banana","Sagacitas Bingo Night","Sagacitas Spooky Nights","SAGA Trivia Night","SAGA Matcha Gotcha","SAGA BBQ Night"],
+ "so+pe":["Picasso"],
+ "so+me":["Nachos Night"],
+ "so+sa":["Rolls Heavy Spheres","Valentines' Netflix & Chill"],
+ "pe+me":["Night Cycling","Slimey White","Scavenger Hunt & Dinner","Valentines"],
+ "pe+sa":["Board Game Night","New Sem New Me"],
+ "me+sa":["Homie Haven"],
+ all:["Hiking","Airsoft",["Halloween Night Slicing Shallots","with Student Life"]]
+};
+const CAT_ITEMS=Object.entries(CATALOGUE).flatMap(([cat,l])=>l.map(x=>Array.isArray(x)?{name:x[0],note:x[1],cat}:{name:x,cat}));
+const CAT_BIG=[["so","pe","me","sa"]];
+const catOfItems=h=>CAT_ITEMS.filter(e=>e.cat===key(h)&&(!q||(e.name+" "+(e.note||"")).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name));
+function catCard(h){const evs=catOfItems(h);
+const list=evs.length?'<ul'+(h.length===1?' class="cols"':'')+'>'+evs.map(e=>'<li><span class="n">'+esc(e.name)+(e.note?'<span class="note">'+esc(e.note)+'</span>':'')+'</span></li>').join("")+"</ul>":'<p class="none">'+(q?"No matches":"None yet")+'</p>';
+return '<section class="cat'+(h.length===4?" big":"")+'" aria-label="'+esc(titleOf(h))+'">'+tile(h,h.length===4?52:44)+'<div class="body"><h3>'+esc(titleOf(h))+"</h3>"+list+"</div></section>";}
+function renderKey(){const c={so:0,pe:0,me:0,sa:0};(view==="cat"?CAT_ITEMS:events).forEach(e=>{if(e.cat==="all")ORDER.forEach(x=>c[x]++);else if(e.cat!=="hh")e.cat.split("+").forEach(x=>c[x]++);});
+$("key").innerHTML=HOUSES.map(h=>"<li>"+tile([h.id],22)+"<b>"+h.name+"</b><span>"+c[h.id]+"</span></li>").join("");
+$("key").setAttribute("aria-label",view==="cat"?"Houses and number of past event ideas":"Houses and event counts");}
+function renderCat(){$("cSingles").innerHTML=SINGLES.map(catCard).join("");$("cPairs").innerHTML=PAIRS.map(catCard).join("");$("cAll").innerHTML=CAT_BIG.map(catCard).join("");}
+function setView(v){view=v;const cat=v==="cat";$("boardView").hidden=cat;$("catView").hidden=!cat;
+$("tabBoard").setAttribute("aria-selected",cat?"false":"true");$("tabCat").setAttribute("aria-selected",cat?"true":"false");
+$("editBtn").hidden=cat;if(cat&&editing){editing=false;render();}
+try{history.replaceState(null,"",cat?"#catalogue":location.pathname+location.search);}catch(e){}
+if(cat)renderCat();renderKey();}
 
 /* ---------- render ---------- */
 function tile(h,size){const q=Math.round(size*.47),g=size-2*q;let s='<svg class="tile" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true">';
@@ -168,8 +217,7 @@ const list=evs.length?"<ul>"+evs.map(item).join("")+"</ul>":'<p class="none">No 
 const add=editing?'<button type="button" class="add" data-add="'+k+'">+ Add event</button>':"";
 return '<section class="cat'+(big?" big":"")+'" aria-label="'+esc(titleOf(h))+'">'+tile(h,big?52:44)+'<div class="body"><h3>'+esc(titleOf(h))+"</h3>"+list+add+"</div></section>";}
 
-function render(){const c={so:0,pe:0,me:0,sa:0};events.forEach(e=>{if(e.cat==="all")ORDER.forEach(x=>c[x]++);else if(e.cat!=="hh")e.cat.split("+").forEach(x=>c[x]++);});
-$("key").innerHTML=HOUSES.map(h=>"<li>"+tile([h.id],22)+"<b>"+h.name+"</b><span>"+c[h.id]+"</span></li>").join("");
+function render(){renderKey();
 $("singles").innerHTML=SINGLES.map(card).join("");
 $("pairs").innerHTML=PAIRS.map(card).join("");
 $("all").innerHTML=BIG.map(card).join("");
@@ -260,23 +308,28 @@ const ad=e.target.closest("[data-add]");if(ad)openEv(null,ad.dataset.add);});
 /* ---------- PNG export ---------- */
 function exportPNG(){const cs=getComputedStyle(document.documentElement),v=n=>cs.getPropertyValue(n).trim();
 const W=1080,P=56,COLW=(W-P*2-24)/2,F='"Bricolage Grotesque",system-ui,sans-serif';
-const groups=[["Single house",SINGLES],["Two houses",PAIRS],["All houses",BIG]];
-const cardH=h=>Math.max(96,64+Math.max(1,evsOf(h).length)*32+16);
+const cat=view==="cat",itemsOf=cat?catOfItems:evsOf;
+const groups=[["Single house",SINGLES],["Two houses",PAIRS],["All houses",cat?CAT_BIG:BIG]];
+const cardH=h=>Math.max(96,64+Math.max(1,itemsOf(h).length)*32+16);
 let H=P+70;groups.forEach(([,cats])=>{H+=56;for(let i=0;i<cats.length;i+=2)H+=Math.max(cardH(cats[i]),cats[i+1]?cardH(cats[i+1]):0)+20;});H+=P-20;
 const cv=document.createElement("canvas");cv.width=W*2;cv.height=H*2;const x=cv.getContext("2d");x.scale(2,2);
-x.fillStyle=v("--bg");x.fillRect(0,0,W,H);x.fillStyle=v("--ink");x.font="700 44px "+F;x.fillText("SPMS house events",P,P+40);
+x.fillStyle=v("--bg");x.fillRect(0,0,W,H);x.fillStyle=v("--ink");x.font="700 44px "+F;x.fillText(cat?"SPMS event catalogue":"SPMS house events",P,P+40);
 const rr=(X,Y,w,h,r)=>{x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,r):x.rect(X,Y,w,h);};
 const tl=(h,X,Y,s)=>{if(h[0]==="hh"){x.fillStyle=v("--gr");rr(X,Y,s,s,6);x.fill();return;}const q=Math.round(s*.47),g=s-2*q;ORDER.forEach(id=>{const[a,b]=QPOS[id];x.fillStyle=h.includes(id)?v("--"+id):v("--empty");rr(X+a*(q+g),Y+b*(q+g),q,q,4);x.fill();});};
 let y=P+70;groups.forEach(([label,cats])=>{x.fillStyle=v("--muted");x.font="600 18px "+F;x.fillText(label,P,y+30);y+=56;
 for(let i=0;i<cats.length;i+=2){const rowH=Math.max(cardH(cats[i]),cats[i+1]?cardH(cats[i+1]):0);
 [cats[i],cats[i+1]].forEach((h,j)=>{if(!h)return;const X=P+j*(COLW+24);x.fillStyle=v("--card");rr(X,y,COLW,rowH,14);x.fill();x.strokeStyle=v("--line");x.lineWidth=1;x.stroke();
 tl(h,X+18,y+18,48);x.fillStyle=v("--ink");x.font="600 20px "+F;x.fillText(titleOf(h),X+84,y+42);
-const evs=evsOf(h);x.font="400 18px "+F;if(!evs.length){x.fillStyle=v("--muted");x.fillText("No events yet",X+84,y+76);}
-evs.forEach((e,k)=>{const ty=y+76+k*32;x.textAlign="left";x.fillStyle=e.done?v("--muted"):v("--ink");x.fillText(e.name,X+84,ty);
-if(e.done)x.fillRect(X+84,ty-7,x.measureText(e.name).width,2);x.fillStyle=v("--muted");x.textAlign="right";x.fillText(e.d+" "+MON[e.m-1],X+COLW-18,ty);x.textAlign="left";});});
+const evs=itemsOf(h);x.font="400 18px "+F;if(!evs.length){x.fillStyle=v("--muted");x.fillText(cat?"None yet":"No events yet",X+84,y+76);}
+evs.forEach((e,k)=>{const ty=y+76+k*32;x.textAlign="left";x.fillStyle=e.done?v("--muted"):v("--ink");x.fillText(e.note?e.name+" ("+e.note+")":e.name,X+84,ty);
+if(e.done)x.fillRect(X+84,ty-7,x.measureText(e.name).width,2);x.fillStyle=v("--muted");x.textAlign="right";x.fillText(e.d?e.d+" "+MON[e.m-1]:"",X+COLW-18,ty);x.textAlign="left";});});
 y+=rowH+20;}});
-cv.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="spms-house-events.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);},"image/png");}
+cv.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=cat?"spms-event-catalogue.png":"spms-house-events.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);},"image/png");}
 $("png").onclick=exportPNG;
+$("tabBoard").onclick=()=>setView("board");$("tabCat").onclick=()=>setView("cat");
+$("q").addEventListener("input",()=>{q=$("q").value.trim().toLowerCase();renderCat();});
+window.addEventListener("hashchange",()=>setView(location.hash==="#catalogue"?"cat":"board"));
+setView(view);
 
 load();
 setInterval(()=>{if(!document.hidden)load();},60000);
