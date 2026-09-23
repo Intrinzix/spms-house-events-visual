@@ -1,0 +1,74 @@
+{
+  "events": [
+    {
+      "name": "BYOG",
+      "day": 21,
+      "month": "Oct",
+      "category": "so+pe",
+      "done": false
+    },
+    {
+      "name": "TNT",
+      "day": 23,
+      "month": "Mar",
+      "category": "so+me",
+      "done": false
+    },
+    {
+      "name": "Movie Night",
+      "day": 16,
+      "month": "Mar",
+      "category": "so+sa",
+      "done": false
+    },
+    {
+      "name": "D&D",
+      "day": 1,
+      "month": "Apr",
+      "category": "so+sa",
+      "done": false
+    },
+    {
+      "name": "Sing & Sing & Sing",
+      "day": 28,
+      "month": "Jan",
+      "category": "pe+me",
+      "done": false
+    },
+    {
+      "name": "Beyblade",
+      "day": 15,
+      "month": "Feb",
+      "category": "pe+me",
+      "done": false
+    },
+    {
+      "name": "Paint your number",
+      "day": 12,
+      "month": "Jan",
+      "category": "pe+sa",
+      "done": false
+    },
+    {
+      "name": "Homie Haven 2.0",
+      "day": 21,
+      "month": "Jan",
+      "category": "me+sa",
+      "done": false
+    },
+    {
+      "name": "TSPMO",
+      "day": 8,
+      "month": "Oct",
+      "category": "all",
+      "done": false
+    },
+    {
+      "name": "Valentines",
+      "day": 2,
+      "month": "Feb",
+      "category": "all",
+      "done": false
+    }
+  ]
+}
