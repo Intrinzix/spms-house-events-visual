@@ -1,8 +1,16 @@
 # SPMS house events
 
-A board of SPMS house events, grouped by which houses take part.
+Live board: https://intrinzix.github.io/spms-house-events-visual/
 
-- **View:** the GitHub Pages site for this repo.
-- **Edit:** sign in at [Pages CMS](https://pagescms.org), open this repo, then open **House events**. Add, edit or delete events, and tick **Finished** once an event is done. The site updates about a minute after you save.
+- `index.html` — the board. Tap **Edit events** to add, edit, finish or delete events on the page itself.
+- `Code.gs` — the backend (Google Apps Script web app, no spreadsheet). Events are stored in the script's Script Properties.
+- `events.json` — read-only fallback, only used while `API` in index.html is empty.
 
-All event data lives in `events.json`, and `.pages.yml` defines the editing form.
+## Backend setup
+1. https://script.google.com → New project → paste `Code.gs` → Save.
+2. Deploy → New deployment → Web app. Execute as **Me**, access **Anyone**. Copy the `/exec` URL.
+3. Set `const API = "<that URL>";` near the top of the script in index.html.
+
+Optional passcode: set `PASSCODE` in the Apps Script copy only — don't commit it here, this repo is public.
+
+Undo the last change: in the Apps Script editor, run `restoreBackup`.
