@@ -61,7 +61,7 @@ dialog form{padding:20px;display:grid;gap:14px}
 dialog h2{margin:0;font-size:20px;color:var(--ink)}
 label.f{display:grid;gap:6px;font-size:14px;font-weight:600}
 input[type=text],input[type=password],input[type=search],select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
-.row2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.row2{display:grid;grid-template-columns:.8fr 1.1fr 1.1fr;gap:10px}
 fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
 legend{font-size:14px;font-weight:600;margin-bottom:6px;padding:0}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -131,6 +131,7 @@ legend{font-size:14px;font-weight:600;margin-bottom:6px;padding:0}
     <div class="row2">
       <label class="f">Day<select id="evDay"></select></label>
       <label class="f">Month<select id="evMon"></select></label>
+      <label class="f">Year<select id="evYear"></select></label>
     </div>
     <fieldset>
       <legend>Houses taking part</legend>
@@ -164,7 +165,11 @@ const VALID=new Set([...SINGLES,...PAIRS].map(h=>h.join("+")).concat(["all","hh"
 const key=h=>h[0]==="hh"?"hh":h.length===4?"all":h.join("+");
 const housesOf=cat=>cat==="hh"?["hh"]:cat==="all"?ORDER.slice():cat.split("+");
 const titleOf=h=>h[0]==="hh"?"House event":h.length===4?"All houses":h.map(x=>HN[x]).join(" + ");
-const ay=e=>((e.m+4)%12)*40+e.d;
+const ay=e=>e.y*10000+e.m*100+e.d;
+const leap=y=>y%4===0&&(y%100!==0||y%400===0);
+const daysIn=(m,y)=>m===2&&!leap(y)?28:DIM[m-1];
+const fmt=e=>e.d+" "+MON[e.m-1]+" "+e.y;
+function inferYear(m,d){const n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate());return new Date(n.getFullYear(),m-1,d)<t?n.getFullYear()+1:n.getFullYear();}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=id=>document.getElementById(id);
 const PASS_KEY="spms-house-pass";
@@ -208,7 +213,7 @@ for(const id of ORDER){const[x,y]=QPOS[id];s+='<rect x="'+x*(q+g)+'" y="'+y*(q+g
 return s+"</svg>";}
 const evsOf=h=>events.filter(e=>e.cat===key(h)).sort((a,b)=>ay(a)-ay(b));
 
-function item(e){const inner='<span class="n">'+esc(e.name)+(e.done?'<span class="sr"> (finished)</span>':'')+'</span><time>'+e.d+" "+MON[e.m-1]+"</time>";
+function item(e){const inner='<span class="n">'+esc(e.name)+(e.done?'<span class="sr"> (finished)</span>':'')+'</span><time>'+fmt(e)+"</time>";
 if(editing&&e.id)return '<li'+(e.done?' class="done"':'')+'><button type="button" class="row" data-edit="'+esc(e.id)+'" aria-label="Edit '+esc(e.name)+'">'+inner+'<span class="pen" aria-hidden="true">✎</span></button></li>';
 return '<li'+(e.done?' class="done"':'')+'>'+inner+'</li>';}
 
@@ -229,7 +234,8 @@ if(editing){$("addTop").onclick=()=>openEv(null,"");if($("lock"))$("lock").oncli
 function normalise(list){const ok=[],bad=[];(Array.isArray(list)?list:[]).forEach((r,i)=>{
 const name=String(r&&r.name||"").trim(),d=Number(r&&r.day),m=MON.indexOf(r&&r.month)+1,cat=r&&r.category;
 if(!name||!m||!(d>=1&&d<=DIM[m-1])||!VALID.has(cat)){bad.push(name||"Entry "+(i+1));return;}
-ok.push({id:r.id?String(r.id):"",name,d,m,cat,done:!!r.done});});return{ok,bad};}
+const y=Number(r&&r.year)||inferYear(m,d);
+ok.push({id:r.id?String(r.id):"",name,d,m,y,cat,done:!!r.done});});return{ok,bad};}
 
 function setEvents(list){const {ok,bad}=normalise(list);events=ok;render();
 $("status").innerHTML=bad.length?'<div class="msg warn">Some events are incomplete and aren\'t shown: '+bad.map(esc).join(", ")+'.</div>':"";}
@@ -275,12 +281,14 @@ const c=catOf();$("catHint").className="hint"+(c.err&&sel.length?" err":"");
 $("catHint").textContent=c.cat?"Goes in: "+titleOf(housesOf(c.cat)):(sel.length?c.err:"Tap the houses involved, or House event.");}
 $("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const h=b.dataset.h;
 if(h==="hh")sel=sel.includes("hh")?[]:["hh"];else{sel=sel.filter(x=>x!=="hh");sel=sel.includes(h)?sel.filter(x=>x!==h):sel.concat(h);}syncChips();});
-function syncDays(){const m=$("evMon").selectedIndex,d=$("evDay");const max=DIM[m];[...d.options].forEach((o,i)=>o.disabled=i>=max);if(d.selectedIndex>=max)d.selectedIndex=max-1;}
-$("evMon").onchange=syncDays;
+function syncDays(){const m=$("evMon").selectedIndex,d=$("evDay");const max=daysIn(m+1,Number($("evYear").value));[...d.options].forEach((o,i)=>o.disabled=i>=max);if(d.selectedIndex>=max)d.selectedIndex=max-1;}
+$("evMon").onchange=syncDays;$("evYear").onchange=syncDays;
+function fillYears(sel){const t=new Date().getFullYear(),ys=[];for(let y=t-1;y<=t+3;y++)ys.push(y);if(sel&&!ys.includes(sel))ys.push(sel);ys.sort();
+$("evYear").innerHTML=ys.map(y=>'<option'+(y===sel?' selected':'')+'>'+y+'</option>').join("");}
 
 function openEv(e,cat){cur=e;$("evErr").hidden=true;$("evTitle").textContent=e?"Edit event":"Add event";
 $("evName").value=e?e.name:"";const now=new Date();
-$("evMon").selectedIndex=e?e.m-1:now.getMonth();syncDays();$("evDay").selectedIndex=(e?e.d:now.getDate())-1;syncDays();
+fillYears(e?e.y:now.getFullYear());$("evMon").selectedIndex=e?e.m-1:now.getMonth();syncDays();$("evDay").selectedIndex=(e?e.d:now.getDate())-1;syncDays();
 sel=e?housesOf(e.cat):(cat?housesOf(cat):[]);syncChips();$("evDone").checked=e?e.done:false;
 $("evDel").hidden=!e;$("evDlg").showModal();$("evName").focus();}
 
@@ -296,7 +304,7 @@ finally{busy=false;btn.disabled=false;btn.textContent=old;}}
 $("evForm").addEventListener("submit",ev=>{ev.preventDefault();
 const name=$("evName").value.trim();if(!name){showErr("Give the event a name.");$("evName").focus();return;}
 const c=catOf();if(c.err){showErr(c.err);return;}
-write({action:"save",event:{id:cur?cur.id:"",name,day:$("evDay").selectedIndex+1,month:MON[$("evMon").selectedIndex],category:c.cat,done:$("evDone").checked}},$("evSave"),"Saving…");});
+write({action:"save",event:{id:cur?cur.id:"",name,day:$("evDay").selectedIndex+1,month:MON[$("evMon").selectedIndex],year:Number($("evYear").value),category:c.cat,done:$("evDone").checked}},$("evSave"),"Saving…");});
 $("evDel").onclick=()=>{if(!cur)return;if($("evDel").dataset.confirm!=="1"){$("evDel").dataset.confirm="1";$("evDel").textContent="Tap again to delete";return;}
 write({action:"delete",id:cur.id},$("evDel"),"Deleting…");};
 $("evDlg").addEventListener("close",()=>{$("evDel").dataset.confirm="";$("evDel").textContent="Delete";});
@@ -322,7 +330,7 @@ for(let i=0;i<cats.length;i+=2){const rowH=Math.max(cardH(cats[i]),cats[i+1]?car
 tl(h,X+18,y+18,48);x.fillStyle=v("--ink");x.font="600 20px "+F;x.fillText(titleOf(h),X+84,y+42);
 const evs=itemsOf(h);x.font="400 18px "+F;if(!evs.length){x.fillStyle=v("--muted");x.fillText(cat?"None yet":"No events yet",X+84,y+76);}
 evs.forEach((e,k)=>{const ty=y+76+k*32;x.textAlign="left";x.fillStyle=e.done?v("--muted"):v("--ink");x.fillText(e.note?e.name+" ("+e.note+")":e.name,X+84,ty);
-if(e.done)x.fillRect(X+84,ty-7,x.measureText(e.name).width,2);x.fillStyle=v("--muted");x.textAlign="right";x.fillText(e.d?e.d+" "+MON[e.m-1]:"",X+COLW-18,ty);x.textAlign="left";});});
+if(e.done)x.fillRect(X+84,ty-7,x.measureText(e.name).width,2);x.fillStyle=v("--muted");x.textAlign="right";x.fillText(e.d?fmt(e):"",X+COLW-18,ty);x.textAlign="left";});});
 y+=rowH+20;}});
 cv.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=cat?"spms-event-catalogue.png":"spms-house-events.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);},"image/png");}
 $("png").onclick=exportPNG;
