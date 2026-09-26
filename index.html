@@ -36,12 +36,12 @@ h2{font-size:15px;font-weight:600;color:var(--muted);margin:32px 0 12px}
 .body{flex:1;min-width:0}
 .cat h3{margin:2px 0 8px;font-size:16px;font-weight:600;line-height:1.25}
 .cat ul{list-style:none;margin:0;padding:0}
-.cat li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:15px}
+.cat li{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px;row-gap:1px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
 .cat li:first-child{border-top:0}
-.cat li .n{flex:1;min-width:0;overflow-wrap:break-word}
-.cat li time{color:var(--muted);font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cat li .n{flex:1 1 auto;min-width:0;overflow-wrap:break-word}
+.cat li time{margin-left:auto;color:var(--muted);font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .cat li.done .n,.cat li.done time{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
-.cat li button.row{all:unset;display:flex;align-items:baseline;gap:8px;flex:1;min-width:0;cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px}
+.cat li button.row{all:unset;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px;row-gap:1px;flex:1;min-width:0;cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px}
 .cat li button.row:hover{background:var(--empty)}
 .cat li button.row:focus-visible{outline:2px solid var(--focus)}
 .pen{color:var(--muted);font-size:13px}
