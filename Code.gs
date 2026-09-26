@@ -69,8 +69,16 @@ function doPost(e) {
 function load() {
   const props = PropertiesService.getScriptProperties();
   const raw = props.getProperty(KEY);
-  if (raw) { try { return JSON.parse(raw); } catch (err) {} }
-  const seeded = SEED.map(s => ({ id: newId(), name: s[0], day: s[1], month: s[2], category: s[3], done: false }));
+  if (raw) {
+    try {
+      const events = JSON.parse(raw);
+      let changed = false;   // give older events (saved before years existed) their next upcoming year
+      events.forEach(e => { if (!e.year) { e.year = inferYear(MON.indexOf(e.month), e.day); changed = true; } });
+      if (changed) props.setProperty(KEY, JSON.stringify(events));
+      return events;
+    } catch (err) {}
+  }
+  const seeded = SEED.map(s => ({ id: newId(), name: s[0], day: s[1], month: s[2], year: inferYear(MON.indexOf(s[2]), s[1]), category: s[3], done: false }));
   props.setProperty(KEY, JSON.stringify(seeded));
   return seeded;
 }
@@ -96,7 +104,17 @@ function clean(ev) {
   const m = MON.indexOf(ev.month);
   const cat = String(ev.category || '');
   if (!name || m < 0 || !(day >= 1 && day <= DIM[m]) || VALID.indexOf(cat) < 0) return null;
-  return { id: String(ev.id || ''), name: name, day: day, month: MON[m], category: cat, done: !!ev.done };
+  let year = Number(ev.year);
+  if (!(year >= 2000 && year <= 2100)) year = inferYear(m, day);
+  if (m === 1 && day === 29 && !(year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0))) return null;
+  return { id: String(ev.id || ''), name: name, day: day, month: MON[m], year: year, category: cat, done: !!ev.done };
+}
+
+/** Next time this day/month comes round (today counts). Used only when no year is given. */
+function inferYear(m, day) {
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const y = now.getFullYear();
+  return new Date(y, m, day) < today ? y + 1 : y;
 }
 
 function newId() { return Utilities.getUuid().slice(0, 8); }
